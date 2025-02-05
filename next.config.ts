@@ -17,6 +17,11 @@ const nextConfig: NextConfig = {
 				hostname: 'static-cdn.jtvnw.net',
 				pathname: '/emoticons/v2/**',
 			},
+			{
+				protocol: 'https',
+				hostname: 'cdn.7tv.app',
+				pathname: '/**',
+			},
 		],
 	},
 };

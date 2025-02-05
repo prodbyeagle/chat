@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Geist as fonthaha } from 'next/font/google';
 import './globals.css';
 
-const geistSans = Inter({
+const font = fonthaha({
 	subsets: ['latin'],
 });
 
@@ -18,9 +18,7 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang='en'>
-			<body className={`${geistSans.className} antialiased`}>
-				{children}
-			</body>
+			<body className={`${font.className} antialiased`}>{children}</body>
 		</html>
 	);
 }

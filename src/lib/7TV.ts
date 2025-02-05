@@ -5,12 +5,12 @@ import { Twitch } from './Twitch';
 
 export class SevenTV {
 	private baseUrl: string;
-	private globalEmoteUrl: string;
 
 	constructor() {
 		this.baseUrl = 'https://7tv.io/v3/gql';
 	}
 
+	//! Dont remove, can be used in the future
 	// private async fetchGraphQL(
 	// 	query: string,
 	// 	variables: Record<string, unknown> = {}
@@ -97,7 +97,7 @@ export class SevenTV {
 		}
 
 		const json = await res.json();
-		console.log('7TV Global Emotes:', json);
+		console.log('[fetchGlobalSTVEmotes]', json);
 		return json.data;
 	}
 }

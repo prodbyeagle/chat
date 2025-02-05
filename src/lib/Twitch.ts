@@ -1,9 +1,19 @@
 import { TWITCH_CLIENT_ID, TWITCH_TOKEN } from './Config';
 
+/**
+ * Handles authentication and API requests to Twitch.
+ * Manages OAuth tokens and fetches broadcaster information.
+ */
 export class Twitch {
 	private static token: string | null = null;
 	private static tokenExpiresAt: number | null = null;
 
+	/**
+	 * Retrieves the access token from Twitch, reusing it if it's still valid.
+	 * If the token has expired, it fetches a new one.
+	 *
+	 * @returns The access token as a string.
+	 */
 	static async getAccessToken(): Promise<string> {
 		if (
 			Twitch.token &&
@@ -20,6 +30,12 @@ export class Twitch {
 		return Twitch.token;
 	}
 
+	/**
+	 * Fetches a new access token from Twitch using client credentials.
+	 *
+	 * @throws Error if the client credentials are missing or if the token fetch fails.
+	 * @returns The token data, including the access token and expiration time.
+	 */
 	private static async fetchAccessToken(): Promise<{
 		access_token: string;
 		expires_in: number;
@@ -49,6 +65,13 @@ export class Twitch {
 		return res.json();
 	}
 
+	/**
+	 * Retrieves the broadcaster's unique ID based on their Twitch username.
+	 *
+	 * @param username - The Twitch username of the broadcaster.
+	 * @returns The unique broadcaster ID.
+	 * @throws Error if the broadcaster is not found or if the API request fails.
+	 */
 	static async getBroadcasterId(username: string): Promise<string> {
 		console.log(`Fetching broadcaster ID for username: ${username}`);
 		const token = await Twitch.getAccessToken();
@@ -66,7 +89,9 @@ export class Twitch {
 		);
 
 		if (!res.ok) {
-			console.error(`Failed to fetch broadcaster ID: ${res.status} ${res.statusText}`);
+			console.error(
+				`Failed to fetch broadcaster ID: ${res.status} ${res.statusText}`
+			);
 			throw new Error(
 				`Failed to fetch broadcaster ID: ${res.status} ${res.statusText}`
 			);
@@ -80,7 +105,9 @@ export class Twitch {
 		}
 
 		const broadcasterId = data.data[0].id;
-		console.log(`Broadcaster ID for username ${username}: ${broadcasterId}`);
+		console.log(
+			`Broadcaster ID for username ${username}: ${broadcasterId}`
+		);
 		return broadcasterId;
 	}
 }

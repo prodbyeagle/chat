@@ -1,9 +1,10 @@
 import tmi from 'tmi.js';
-import type { ChatMessage } from '@/types/Chat';
+import type { Message } from '@/types/Chat';
 
 export class Chat {
 	private client: tmi.Client;
 	private channel: string;
+	private isConnected = false;
 
 	constructor(channel: string) {
 		this.channel = channel;
@@ -14,26 +15,29 @@ export class Chat {
 	}
 
 	async connect() {
+		if (this.isConnected) return;
 		try {
 			await this.client.connect();
+			this.isConnected = true;
 		} catch (error) {
 			console.error('Chat connection failed:', error);
 		}
 	}
 
 	async disconnect() {
+		if (!this.isConnected) return;
 		try {
 			await this.client.disconnect();
+			this.isConnected = false;
 		} catch (error) {
 			console.error('Chat disconnection failed:', error);
 		}
 	}
 
-	onMessage(callback: (chatMessage: ChatMessage) => void) {
+	onMessage(callback: (chatMessage: Message) => void) {
 		this.client.on('message', (channel, userstate, message, self) => {
 			if (self) return;
-
-			const chatMessage: ChatMessage = {
+			callback({
 				username: userstate.username || 'unknown',
 				displayName:
 					userstate['display-name'] ||
@@ -44,14 +48,19 @@ export class Chat {
 					userstate.color ||
 					this.getDefaultColor(userstate.username || 'unknown'),
 				badges: userstate.badges || {},
-				isMod: userstate.mod === true,
-				isSubscriber: userstate.subscriber === true,
-				isBroadcaster: userstate.badges?.broadcaster === '1',
-				userId: userstate['user-id'] || '',
-				timestamp: Number(userstate['tmi-sent-ts']) || Date.now(),
-			};
+			});
+		});
+	}
 
-			callback(chatMessage);
+	onTimeout(callback: (username: string, duration: string) => void) {
+		this.client.on('timeout', (username, duration) => {
+			callback(username, duration);
+		});
+	}
+
+	onBan(callback: (username: string) => void) {
+		this.client.on('ban', (username) => {
+			callback(username);
 		});
 	}
 

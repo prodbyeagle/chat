@@ -42,16 +42,16 @@ export type STVEmote = {
 		};
 		host: {
 			url: string;
+			files: {
+				name: string;
+				static_name: string;
+				width: number;
+				height: number;
+				frame_count: number;
+				size: number;
+				format: string;
+			}[];
 		};
-		files: {
-			name: string;
-			static_name: string;
-			width: number;
-			height: number;
-			frame_count: number;
-			size: number;
-			format: string;
-		}[];
 	};
 };
 

@@ -48,4 +48,39 @@ export class Twitch {
 
 		return res.json();
 	}
+
+	static async getBroadcasterId(username: string): Promise<string> {
+		console.log(`Fetching broadcaster ID for username: ${username}`);
+		const token = await Twitch.getAccessToken();
+		console.log(`Access token retrieved: ${token}`);
+
+		const res = await fetch(
+			`https://api.twitch.tv/helix/users?login=${username}`,
+			{
+				method: 'GET',
+				headers: {
+					'Client-ID': TWITCH_CLIENT_ID,
+					Authorization: `Bearer ${token}`,
+				},
+			}
+		);
+
+		if (!res.ok) {
+			console.error(`Failed to fetch broadcaster ID: ${res.status} ${res.statusText}`);
+			throw new Error(
+				`Failed to fetch broadcaster ID: ${res.status} ${res.statusText}`
+			);
+		}
+
+		const data = await res.json();
+		console.log(`Response data: ${JSON.stringify(data)}`);
+		if (!data?.data?.length) {
+			console.error(`No broadcaster found for username: ${username}`);
+			throw new Error(`No broadcaster found for username: ${username}`);
+		}
+
+		const broadcasterId = data.data[0].id;
+		console.log(`Broadcaster ID for username ${username}: ${broadcasterId}`);
+		return broadcasterId;
+	}
 }

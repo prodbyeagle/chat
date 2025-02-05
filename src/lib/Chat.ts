@@ -81,20 +81,19 @@ export class Chat {
 	}
 
 	/**
-	 * Generates a default color based on the username.
-	 * The color is chosen from a predefined set of colors based on the username hash.
+	 * Generates a default neutral color that provides good contrast for both dark and light modes.
 	 *
 	 * @param username - The username used to generate the color.
 	 * @returns A hex color string.
 	 */
 	private getDefaultColor(username: string): string {
 		const colors = [
-			'#FF4500',
-			'#2E8B57',
-			'#1E90FF',
-			'#8A2BE2',
-			'#FFD700',
-			'#FF69B4',
+			'#A9A9A9', // DarkGray
+			'#808080', // Gray
+			'#696969', // DimGray
+			'#D3D3D3', // LightGray
+			'#C0C0C0', // Silver
+			'#BEBEBE', // Gray
 		];
 		const hash = username
 			.split('')

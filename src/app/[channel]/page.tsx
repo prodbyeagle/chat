@@ -3,18 +3,19 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
+import { useAutoAnimate } from '@formkit/auto-animate/react';
 
 import { Chat } from '@/lib/Chat';
 import { Badge } from '@/lib/Badge';
 import { SevenTV } from '@/lib/7TV';
 import { Emote } from '@/lib/Emote';
 import { handleCommand } from '@/lib/Command';
-
 import { replaceEmotes } from '@/utils/emoteUtils';
+import { adjustColorBrightness } from '@/utils/colorUtils';
 
 import type { Message } from '@/types/Chat';
 import type { STVEmote, TwitchEmoteData } from '@/types/Emote';
-import { adjustColorBrightness } from '@/utils/colorUtils';
+import type { TwitchBadgeSet } from '@/types/Badge';
 
 const MAX_MESSAGES = 20;
 
@@ -30,49 +31,50 @@ export default function ChatPage() {
 	const [STVChannelEmotes, setSTVChannelEmotes] = useState<STVEmote[] | null>(
 		null
 	);
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const [badges, setBadges] = useState<{ global: any; channel: any } | null>(
-		null
-	);
+	const [badges, setBadges] = useState<{
+		global: Record<string, TwitchBadgeSet>;
+		channel: Record<string, TwitchBadgeSet>;
+	} | null>(null);
+
+	// hier hook für auto-animate
+	const [animationParent] = useAutoAnimate<HTMLDivElement>();
 
 	useEffect(() => {
 		const fetchData = async () => {
 			if (!channel) return;
-
 			const chat = new Chat(channel);
 			const emote = await Emote.create(channel);
 			const badge = await Badge.create(channel);
 			const sevenTV = new SevenTV();
 
 			try {
-				const badges = await badge.fetchBadges();
-				const emoteData = await emote.fetchEmotes();
-				const stvGlobalEmotes = await sevenTV.fetchGlobalSTVEmotes();
-				const stvChannelEmotes = await sevenTV.getSTVChannelEmotes(
-					channel
-				);
+				const [badgesData, emoteData, stvGlobal, stvChannel] =
+					await Promise.all([
+						badge.fetchBadges(),
+						emote.fetchEmotes(),
+						sevenTV.fetchGlobalSTVEmotes(),
+						sevenTV.getSTVChannelEmotes(channel),
+					]);
 
 				Badge.addCustomBadge(
 					'prodbyeagle',
 					'https://cdn.7tv.app/emote/01H5ET82KR000B4C7M34K6ZCTK/4x.avif'
 				);
-
 				Badge.addCustomBadge(
 					'dwhincandi',
 					'https://cdn.7tv.app/emote/01F6T920S80004B20PGM3Q1GQS/4x.avif'
 				);
 
-				setSTVGlobalEmotes(stvGlobalEmotes);
-				setSTVChannelEmotes(stvChannelEmotes);
-				setBadges(badges);
+				setBadges(badgesData);
 				setEmotes(emoteData);
+				setSTVGlobalEmotes(stvGlobal);
+				setSTVChannelEmotes(stvChannel);
 
 				chat.connect();
 				chat.onMessage((chatMessage) => {
 					handleCommand(chatMessage.message);
-
 					setMessages((prev) => {
-						const updatedMessages = [
+						const next = [
 							...prev,
 							{
 								username: chatMessage.username,
@@ -82,16 +84,14 @@ export default function ChatPage() {
 								badges: chatMessage.badges,
 							},
 						];
-						return updatedMessages.slice(-MAX_MESSAGES);
+						return next.slice(-MAX_MESSAGES);
 					});
 				});
 			} catch (error) {
 				console.error('Fehler beim Abrufen der Daten:', error);
 			}
 
-			return () => {
-				chat.disconnect();
-			};
+			return () => chat.disconnect();
 		};
 
 		fetchData();
@@ -102,27 +102,22 @@ export default function ChatPage() {
 	}, [messages]);
 
 	return (
-		//? BG ONLY FOR DEVELOPING (better to see the chat.)
-		<div className='h-screen text-xl text-neutral-100 p-4 overflow-hidden flex flex-col justify-end cursor-default select-none'>
-			<div>
-				{messages.map((msg, index) => (
-					<div
-						key={index}
-						className='my-1 flex items-center space-x-1'>
+		<div className='h-screen p-4 text-xl text-yellow-50 flex flex-col justify-end overflow-hidden cursor-default select-none'>
+			<div ref={animationParent} className='space-y-1'>
+				{messages.map((msg, idx) => (
+					<div key={idx} className='flex items-center space-x-1'>
 						{badges &&
 							Object.entries(msg.badges || {}).map(
 								([badge, version]) => {
-									const badgeUrl = new Badge(
-										channel
-									).getBadgeUrl(
+									const url = new Badge(channel).getBadgeUrl(
 										badge,
-										version as string,
+										version || '',
 										badges
 									);
-									return badgeUrl ? (
+									return url ? (
 										<Image
 											key={badge}
-											src={badgeUrl}
+											src={url}
 											width={20}
 											height={20}
 											alt={badge}
@@ -132,7 +127,6 @@ export default function ChatPage() {
 									) : null;
 								}
 							)}
-
 						{Badge.getCustomBadge(msg.username) && (
 							<Image
 								src={Badge.getCustomBadge(msg.username)!}

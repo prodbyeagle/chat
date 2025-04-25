@@ -58,8 +58,8 @@ export default function ChatPage() {
 				);
 
 				Badge.addCustomBadge(
-					'cronxz_tv',
-					'https://cdn.7tv.app/emote/01GRKSG9E000091TEC1A28HSM5/4x.webp'
+					'dwhincandi',
+					'https://cdn.7tv.app/emote/01F6T920S80004B20PGM3Q1GQS/4x.avif'
 				);
 
 				setSTVGlobalEmotes(stvGlobalEmotes);
@@ -103,7 +103,7 @@ export default function ChatPage() {
 
 	return (
 		//? BG ONLY FOR DEVELOPING (better to see the chat.)
-		<div className='h-screen text-xl bg-neutral-900 text-neutral-100 p-4 overflow-hidden flex flex-col justify-end cursor-default select-none'>
+		<div className='h-screen text-xl text-neutral-100 p-4 overflow-hidden flex flex-col justify-end cursor-default select-none'>
 			<div>
 				{messages.map((msg, index) => (
 					<div

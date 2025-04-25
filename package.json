@@ -6,6 +6,7 @@
 		"lint": "next lint"
 	},
 	"dependencies": {
+		"@formkit/auto-animate": "^0.8.2",
 		"@tailwindcss/postcss": "^4.1.4",
 		"@types/tmi.js": "^1.8.6",
 		"dotenv": "^16.5.0",

@@ -1,5 +1,3 @@
-// 7TV.ts
-
 import { STVEmote } from '@/types/Emote';
 import { Twitch } from './Twitch';
 
@@ -10,36 +8,15 @@ export class SevenTV {
 		this.baseUrl = 'https://7tv.io/v3/gql';
 	}
 
-	//! Dont remove, can be used in the future
-	// private async fetchGraphQL(
-	// 	query: string,
-	// 	variables: Record<string, unknown> = {}
-	// ) {
-	// 	const response = await fetch(this.baseUrl, {
-	// 		method: 'POST',
-	// 		headers: {
-	// 			'Content-Type': 'application/json',
-	// 		},
-	// 		body: JSON.stringify({
-	// 			query,
-	// 			variables,
-	// 		}),
-	// 	});
-
-	// 	const data = await response.json();
-
-	// 	if (data.errors) {
-	// 		throw new Error(`GraphQL Error: ${JSON.stringify(data.errors)}`);
-	// 	}
-
-	// 	return data.data;
-	// }
+	private async fetchTwitchUserId(twitchUsername: string): Promise<string> {
+		return await Twitch.getBroadcasterId(twitchUsername);
+	}
 
 	public async getSTVUserId(twitchUsername: string) {
-		const twitchUserId = await Twitch.getBroadcasterId(twitchUsername);
-		const url = `https://7tv.io/v3/users/twitch/${twitchUserId}`;
-
 		try {
+			const twitchUserId = await this.fetchTwitchUserId(twitchUsername);
+			const url = `https://7tv.io/v3/users/twitch/${twitchUserId}`;
+
 			const response = await fetch(url);
 			const data = await response.json();
 
@@ -57,25 +34,27 @@ export class SevenTV {
 	}
 
 	public async getSTVUserData(twitchUsername: string) {
-		const twitchUserId = await Twitch.getBroadcasterId(twitchUsername);
-		const url = `https://7tv.io/v3/users/twitch/${twitchUserId}`;
-
 		try {
+			const twitchUserId = await this.fetchTwitchUserId(twitchUsername);
+			const url = `https://7tv.io/v3/users/twitch/${twitchUserId}`;
+
 			const response = await fetch(url);
 			const data = await response.json();
 
 			return data.user;
 		} catch (error) {
-			console.error(`Fehler beim Abrufen der 7TV-Benutzer-ID: ${error}`);
+			console.error(
+				`Fehler beim Abrufen der 7TV-Benutzerdaten: ${error}`
+			);
 			return null;
 		}
 	}
 
 	public async getSTVChannelEmotes(twitchUsername: string) {
-		const twitchUserId = await Twitch.getBroadcasterId(twitchUsername);
-		const url = `https://7tv.io/v3/users/twitch/${twitchUserId}`;
-
 		try {
+			const twitchUserId = await this.fetchTwitchUserId(twitchUsername);
+			const url = `https://7tv.io/v3/users/twitch/${twitchUserId}`;
+
 			const response = await fetch(url);
 			const data = await response.json();
 
@@ -87,17 +66,22 @@ export class SevenTV {
 	}
 
 	public async fetchGlobalSTVEmotes(): Promise<STVEmote[]> {
-		const res = await fetch('https://7tv.io/v3/emote-sets/global');
+		try {
+			const res = await fetch('https://7tv.io/v3/emote-sets/global');
 
-		if (!res.ok) {
-			console.error(
-				`Failed to fetch global emotes: ${res.status} ${res.statusText}`
-			);
+			if (!res.ok) {
+				console.error(
+					`Failed to fetch global emotes: ${res.status} ${res.statusText}`
+				);
+				return [];
+			}
+
+			const json = await res.json();
+			console.log('[fetchGlobalSTVEmotes]', json);
+			return json.data;
+		} catch (error) {
+			console.error(`Fehler beim Abrufen der globalen Emotes: ${error}`);
 			return [];
 		}
-
-		const json = await res.json();
-		console.log('[fetchGlobalSTVEmotes]', json);
-		return json.data;
 	}
 }

@@ -1,4 +1,53 @@
 /**
+ * Represents a version of a Twitch badge.
+ */
+export interface TwitchBadgeVersion {
+	id: string;
+	image_url_1x: string;
+	image_url_2x: string;
+	image_url_4x: string;
+	title: string;
+	description: string;
+	click_action: string | null;
+	click_url: string | null;
+}
+
+/**
+ * Represents a set of Twitch badges, which includes multiple versions of a badge.
+ */
+export interface TwitchBadgeSet {
+	set_id: string;
+	versions: TwitchBadgeVersion[];
+}
+
+/**
+ * Represents the badge data for both global and channel-specific badges.
+ */
+export interface BadgeData {
+	global: Record<string, TwitchBadgeSet>;
+	channel: Record<string, TwitchBadgeSet>;
+}
+
+//! ---
+//! ---
+//! ---
+
+/**
+ * Represents a message in the Twitch chat.
+ */
+export interface Message {
+	username: string;
+	displayName: string;
+	message: string;
+	color: string;
+	badges: Record<string, string | undefined>;
+}
+
+//! ---
+//! ---
+//! ---
+
+/**
  * Represents a set of Twitch emotes.
  */
 export interface TwitchEmoteSet {
@@ -59,13 +108,6 @@ export type STVEmote = {
  * Represents emote data for both global and channel-specific emotes.
  */
 export interface TwitchEmoteData {
-	/**
-	 * A list of global emote sets.
-	 */
 	global: TwitchEmoteSet[];
-
-	/**
-	 * A list of channel-specific emote sets.
-	 */
 	channel: TwitchEmoteSet[];
 }

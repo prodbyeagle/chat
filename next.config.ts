@@ -1,6 +1,7 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+	devIndicators: false,
 	env: {
 		TWITCH_CLIENT_ID: process.env.TWITCH_CLIENT_ID,
 		TWITCH_TOKEN: process.env.TWITCH_TOKEN,

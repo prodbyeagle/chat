@@ -1,9 +1,8 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
-import { useAutoAnimate } from '@formkit/auto-animate/react';
 
 import { Chat } from '@/lib/Chat';
 import { Badge } from '@/lib/Badge';
@@ -23,7 +22,6 @@ export default function ChatPage() {
 	const params = useParams() as { channel: string };
 	const channel = params.channel;
 	const [messages, setMessages] = useState<Message[]>([]);
-	const messagesEndRef = useRef<HTMLDivElement>(null);
 	const [emotes, setEmotes] = useState<TwitchEmoteData | null>(null);
 	const [STVGlobalEmotes, setSTVGlobalEmotes] = useState<STVEmote[] | null>(
 		null
@@ -35,9 +33,6 @@ export default function ChatPage() {
 		global: Record<string, TwitchBadgeSet>;
 		channel: Record<string, TwitchBadgeSet>;
 	} | null>(null);
-
-	// hier hook für auto-animate
-	const [animationParent] = useAutoAnimate<HTMLDivElement>();
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -60,6 +55,7 @@ export default function ChatPage() {
 					'prodbyeagle',
 					'https://cdn.7tv.app/emote/01H5ET82KR000B4C7M34K6ZCTK/4x.avif'
 				);
+
 				Badge.addCustomBadge(
 					'dwhincandi',
 					'https://cdn.7tv.app/emote/01F6T920S80004B20PGM3Q1GQS/4x.avif'
@@ -97,13 +93,9 @@ export default function ChatPage() {
 		fetchData();
 	}, [channel]);
 
-	useEffect(() => {
-		messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-	}, [messages]);
-
 	return (
 		<div className='h-screen p-4 text-xl text-yellow-50 flex flex-col justify-end overflow-hidden cursor-default select-none'>
-			<div ref={animationParent} className='space-y-1'>
+			<div className='space-y-1'>
 				{messages.map((msg, idx) => (
 					<div key={idx} className='flex items-center space-x-1'>
 						{badges &&
@@ -156,7 +148,6 @@ export default function ChatPage() {
 						</span>
 					</div>
 				))}
-				<div ref={messagesEndRef} />
 			</div>
 		</div>
 	);

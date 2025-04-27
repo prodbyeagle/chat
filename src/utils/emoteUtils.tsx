@@ -1,4 +1,4 @@
-import type { STVEmote, TwitchEmoteData } from '@/types/Emote';
+import type { STVEmote, TwitchEmoteData } from '@/types';
 import Image from 'next/image';
 import { JSX } from 'react';
 
@@ -40,7 +40,6 @@ export function replaceEmotes(
 	rawSTVGlobal: STVEmote[] | { emotes: STVEmote[] } | null,
 	rawSTVChannel: STVEmote[] | STVEmote | { emotes: STVEmote[] } | null
 ): (string | JSX.Element)[] {
-
 	const stvGlobal: STVEmote[] = Array.isArray(rawSTVGlobal)
 		? rawSTVGlobal
 		: rawSTVGlobal?.emotes ?? [];

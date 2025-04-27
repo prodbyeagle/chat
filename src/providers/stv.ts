@@ -1,7 +1,7 @@
-import { STVEmote } from '@/types/Emote';
-import { Twitch } from './Twitch';
+import { STVEmote } from '@/types';
+import { TwitchProvider } from '@/providers/twitch';
 
-export class SevenTV {
+export class SevenTVProvider {
 	private baseUrl: string;
 
 	constructor() {
@@ -9,7 +9,7 @@ export class SevenTV {
 	}
 
 	private async fetchTwitchUserId(twitchUsername: string): Promise<string> {
-		return await Twitch.getBroadcasterId(twitchUsername);
+		return await TwitchProvider.getBroadcasterId(twitchUsername);
 	}
 
 	public async getSTVUserId(twitchUsername: string) {

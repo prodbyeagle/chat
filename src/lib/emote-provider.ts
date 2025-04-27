@@ -1,12 +1,12 @@
-import type { TwitchEmoteData, TwitchEmoteSet } from '@/types/Emote';
-import { TWITCH_CLIENT_ID } from './Config';
-import { Twitch } from './Twitch';
+import type { TwitchEmoteData, TwitchEmoteSet } from '@/types';
+import { TWITCH_CLIENT_ID } from '@/lib/config';
+import { TwitchProvider } from '@/providers/twitch';
 
 /**
  * Manages the retrieval and caching of Twitch emotes for broadcasters.
  * Handles both global and channel-specific emotes.
  */
-export class Emote {
+export class EmoteProvider {
 	private static cache: Map<string, TwitchEmoteData> = new Map();
 	private broadcasterId: string;
 
@@ -32,9 +32,9 @@ export class Emote {
 	 * @param username - The username of the broadcaster.
 	 * @returns A `Emote` instance for the broadcaster.
 	 */
-	static async create(username: string): Promise<Emote> {
-		const broadcasterId = await Twitch.getBroadcasterId(username);
-		return new Emote(broadcasterId);
+	static async create(username: string): Promise<EmoteProvider> {
+		const broadcasterId = await TwitchProvider.getBroadcasterId(username);
+		return new EmoteProvider(broadcasterId);
 	}
 
 	/**
@@ -44,11 +44,11 @@ export class Emote {
 	 * @returns A promise resolving to the emote data, including global and channel emotes.
 	 */
 	async fetchEmotes(): Promise<TwitchEmoteData> {
-		if (Emote.cache.has(this.broadcasterId)) {
-			return Emote.cache.get(this.broadcasterId)!;
+		if (EmoteProvider.cache.has(this.broadcasterId)) {
+			return EmoteProvider.cache.get(this.broadcasterId)!;
 		}
 
-		const token = await Twitch.getAccessToken();
+		const token = await TwitchProvider.getAccessToken();
 
 		const [globalEmotes, channelEmotes] = await Promise.all([
 			this.fetchGlobalEmotes(token),
@@ -59,7 +59,7 @@ export class Emote {
 			global: globalEmotes,
 			channel: channelEmotes,
 		};
-		Emote.cache.set(this.broadcasterId, emoteData);
+		EmoteProvider.cache.set(this.broadcasterId, emoteData);
 		return emoteData;
 	}
 

@@ -1,10 +1,10 @@
-import { TWITCH_CLIENT_ID, TWITCH_TOKEN } from './Config';
+import { TWITCH_CLIENT_ID, TWITCH_TOKEN } from '@/lib/config';
 
 /**
  * Handles authentication and API requests to Twitch.
  * Manages OAuth tokens and fetches broadcaster information.
  */
-export class Twitch {
+export class TwitchProvider {
 	private static token: string | null = null;
 	private static tokenExpiresAt: number | null = null;
 
@@ -16,18 +16,19 @@ export class Twitch {
 	 */
 	static async getAccessToken(): Promise<string> {
 		if (
-			Twitch.token &&
-			Twitch.tokenExpiresAt &&
-			Date.now() < Twitch.tokenExpiresAt
+			TwitchProvider.token &&
+			TwitchProvider.tokenExpiresAt &&
+			Date.now() < TwitchProvider.tokenExpiresAt
 		) {
-			return Twitch.token;
+			return TwitchProvider.token;
 		}
 
-		const tokenData = await Twitch.fetchAccessToken();
-		Twitch.token = tokenData.access_token;
-		Twitch.tokenExpiresAt = Date.now() + tokenData.expires_in * 1000;
+		const tokenData = await TwitchProvider.fetchAccessToken();
+		TwitchProvider.token = tokenData.access_token;
+		TwitchProvider.tokenExpiresAt =
+			Date.now() + tokenData.expires_in * 1000;
 
-		return Twitch.token;
+		return TwitchProvider.token;
 	}
 
 	/**
@@ -74,7 +75,7 @@ export class Twitch {
 	 */
 	static async getBroadcasterId(username: string): Promise<string> {
 		console.log(`Fetching broadcaster ID for username: ${username}`);
-		const token = await Twitch.getAccessToken();
+		const token = await TwitchProvider.getAccessToken();
 		console.log(`Access token retrieved: ${token}`);
 
 		const res = await fetch(

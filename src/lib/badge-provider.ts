@@ -1,12 +1,12 @@
-import type { BadgeData, TwitchBadgeSet } from '@/types/Badge';
-import { TWITCH_CLIENT_ID } from './Config';
-import { Twitch } from './Twitch';
+import type { BadgeData, TwitchBadgeSet } from '@/types';
+import { TwitchProvider } from '@/providers/twitch';
+import { TWITCH_CLIENT_ID } from '@/lib/config';
 
 /**
  * Manages the retrieval and caching of Twitch badges for broadcasters.
  * Handles both global and channel-specific badges.
  */
-export class Badge {
+export class BadgeProvider {
 	private static cache: Map<string, BadgeData> = new Map();
 	private static customBadges: { username: string; imageUrl: string }[] = [];
 	private broadcasterId: string;
@@ -31,11 +31,11 @@ export class Badge {
 	 * Creates a new `Badge` instance for a given Twitch username by retrieving the broadcaster ID.
 	 *
 	 * @param username - The username of the broadcaster.
-	 * @returns A `Badge` instance for the broadcaster.
+	 * @returns A `BadgeProvider` instance for the broadcaster.
 	 */
-	static async create(username: string): Promise<Badge> {
-		const broadcasterId = await Twitch.getBroadcasterId(username);
-		return new Badge(broadcasterId);
+	static async create(username: string): Promise<BadgeProvider> {
+		const broadcasterId = await TwitchProvider.getBroadcasterId(username);
+		return new BadgeProvider(broadcasterId);
 	}
 
 	/**
@@ -45,11 +45,11 @@ export class Badge {
 	 * @returns A promise resolving to the badge data, including global and channel badges.
 	 */
 	async fetchBadges(): Promise<BadgeData> {
-		if (Badge.cache.has(this.broadcasterId)) {
-			return Badge.cache.get(this.broadcasterId)!;
+		if (BadgeProvider.cache.has(this.broadcasterId)) {
+			return BadgeProvider.cache.get(this.broadcasterId)!;
 		}
 
-		const token = await Twitch.getAccessToken();
+		const token = await TwitchProvider.getAccessToken();
 		const [globalBadges, channelBadges] = await Promise.all([
 			this.fetchGlobalBadges(token),
 			this.fetchChannelBadges(token),
@@ -59,7 +59,7 @@ export class Badge {
 			global: globalBadges,
 			channel: channelBadges,
 		};
-		Badge.cache.set(this.broadcasterId, badgeData);
+		BadgeProvider.cache.set(this.broadcasterId, badgeData);
 		return badgeData;
 	}
 
@@ -172,7 +172,7 @@ export class Badge {
 	 * @param imageUrl - The URL of the image for the custom badge.
 	 */
 	static addCustomBadge(username: string, imageUrl: string) {
-		Badge.customBadges.push({ username, imageUrl });
+		BadgeProvider.customBadges.push({ username, imageUrl });
 	}
 
 	/**
@@ -182,7 +182,9 @@ export class Badge {
 	 * @returns The custom badge image URL, or `null` if no custom badge exists for the username.
 	 */
 	static getCustomBadge(username: string): string | null {
-		const badge = Badge.customBadges.find((b) => b.username === username);
+		const badge = BadgeProvider.customBadges.find(
+			(b) => b.username === username
+		);
 		return badge ? badge.imageUrl : null;
 	}
 }

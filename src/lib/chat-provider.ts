@@ -1,11 +1,11 @@
 import tmi from 'tmi.js';
-import type { Message } from '@/types/Chat';
+import type { Message } from '@/types';
 
 /**
  * Handles Twitch chat functionality, including connecting to the chat, disconnecting,
  * and processing incoming messages.
  */
-export class Chat {
+export class ChatProvider {
 	private client: tmi.Client;
 	private channel: string;
 	private isConnected = false;
@@ -80,13 +80,7 @@ export class Chat {
 		});
 	}
 
-	/**
-	 * Generates a default neutral color that provides good contrast for both dark and light modes.
-	 *
-	 * @param username - The username used to generate the color.
-	 * @returns A hex color string.
-	 */
-	private getDefaultColor(username: string): string {
+	getDefaultColor = (username: string): string => {
 		const colors = [
 			'#A9A9A9', // DarkGray
 			'#808080', // Gray
@@ -99,5 +93,5 @@ export class Chat {
 			.split('')
 			.reduce((acc, char) => acc + char.charCodeAt(0), 0);
 		return colors[hash % colors.length];
-	}
+	};
 }

@@ -1,119 +1,70 @@
 /**
- * Convert RGB color to HSL.
- * @param r The red channel (0-255).
- * @param g The green channel (0-255).
- * @param b The blue channel (0-255).
- * @returns HSL color object.
+ * Adjusts a color's brightness and converts it to a readable hex color.
+ * @param color The color to adjust (in hex or RGB format).
+ * @returns The adjusted color in hex format.
  */
-const rgbToHsl = (r: number, g: number, b: number) => {
-	r /= 255;
-	g /= 255;
-	b /= 255;
+export const adjustColorBrightness = (color: string): string => {
+	let r: number, g: number, b: number;
+	if (color.startsWith('#')) {
+		r = parseInt(color.slice(1, 3), 16);
+		g = parseInt(color.slice(3, 5), 16);
+		b = parseInt(color.slice(5, 7), 16);
+	} else if (color.startsWith('rgb')) {
+		const rgb = color.match(/rgb\((\d+), (\d+), (\d+)\)/);
+		if (!rgb) throw new Error('Invalid RGB color format');
+		[r, g, b] = rgb.slice(1, 4).map(Number);
+	} else {
+		throw new Error('Unsupported color format');
+	}
 
-	const max = Math.max(r, g, b);
-	const min = Math.min(r, g, b);
-	let h: number = 0,
-		s: number = 0
-		const l: number = (max + min) / 2;
+	const [max, min] = [r, g, b]
+		.map((c) => c / 255)
+		.reduce(
+			([max, min], val) => [Math.max(max, val), Math.min(min, val)],
+			[0, 1]
+		);
+	const l = (max + min) / 2;
+	let h = 0,
+		s = 0;
 
 	if (max !== min) {
 		const d = max - min;
 		s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
 		switch (max) {
-			case r:
-				h = (g - b) / d + (g < b ? 6 : 0);
+			case r / 255:
+				h = (g / 255 - b / 255) / d + (g / 255 < b / 255 ? 6 : 0);
 				break;
-			case g:
-				h = (b - r) / d + 2;
+			case g / 255:
+				h = (b / 255 - r / 255) / d + 2;
 				break;
-			case b:
-				h = (r - g) / d + 4;
+			case b / 255:
+				h = (r / 255 - g / 255) / d + 4;
 				break;
 		}
 		h /= 6;
 	}
 
-	return { h, s, l };
-};
+	const newL = Math.max(0.2, Math.min(0.8, l));
 
-/**
- * Convert HSL color back to RGB.
- * @param h Hue (0-1).
- * @param s Saturation (0-1).
- * @param l Lightness (0-1).
- * @returns RGB color array [r, g, b].
- */
-const hslToRgb = (
-	h: number,
-	s: number,
-	l: number
-): [number, number, number] => {
-	let r: number, g: number, b: number;
+	const c = (1 - Math.abs(2 * newL - 1)) * s;
+	const x = c * (1 - Math.abs(((h * 6) % 2) - 1));
+	const m = newL - c / 2;
+	let newR = 0,
+		newG = 0,
+		newB = 0;
 
-	if (s === 0) {
-		r = g = b = l; // achromatic case
-	} else {
-		const hue2rgb = (p: number, q: number, t: number): number => {
-			if (t < 0) t += 1;
-			if (t > 1) t -= 1;
-			if (t < 1 / 6) return p + (q - p) * 6 * t;
-			if (t < 1 / 2) return q;
-			if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
-			return p;
-		};
+	if (h >= 0 && h < 1 / 6) [newR, newG, newB] = [c, x, 0];
+	else if (h >= 1 / 6 && h < 2 / 6) [newR, newG, newB] = [x, c, 0];
+	else if (h >= 2 / 6 && h < 3 / 6) [newR, newG, newB] = [0, c, x];
+	else if (h >= 3 / 6 && h < 4 / 6) [newR, newG, newB] = [0, x, c];
+	else if (h >= 4 / 6 && h < 5 / 6) [newR, newG, newB] = [x, 0, c];
+	else [newR, newG, newB] = [c, 0, x];
 
-		const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-		const p = 2 * l - q;
-		r = hue2rgb(p, q, h + 1 / 3);
-		g = hue2rgb(p, q, h);
-		b = hue2rgb(p, q, h - 1 / 3);
-	}
+	newR = Math.round((newR + m) * 255);
+	newG = Math.round((newG + m) * 255);
+	newB = Math.round((newB + m) * 255);
 
-	return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
-};
-
-/**
- * Adjusts a color's brightness to ensure it remains within a readable range.
- * @param color The color to adjust (in hex or RGB format).
- * @param minLightness Minimum lightness value (between 0 and 1).
- * @param maxLightness Maximum lightness value (between 0 and 1).
- * @returns The adjusted color in RGB format.
- */
-export const adjustColorBrightness = (
-	color: string,
-	minLightness: number = 0.2,
-	maxLightness: number = 0.8
-): string => {
-	let r: number, g: number, b: number;
-
-	// Check if the input color is in hex or rgb format
-	if (color.startsWith('#')) {
-		// Hex format: #RRGGBB
-		r = parseInt(color.slice(1, 3), 16);
-		g = parseInt(color.slice(3, 5), 16);
-		b = parseInt(color.slice(5, 7), 16);
-	} else if (color.startsWith('rgb')) {
-		const rgbValues = color.match(/rgb\((\d+), (\d+), (\d+)\)/);
-		if (!rgbValues) throw new Error('Invalid RGB color format');
-		r = parseInt(rgbValues[1], 10);
-		g = parseInt(rgbValues[2], 10);
-		b = parseInt(rgbValues[3], 10);
-	} else {
-		throw new Error('Unsupported color format');
-	}
-
-	const { h, s, l } = rgbToHsl(r, g, b);
-
-	let newLightness = l;
-	if (l < minLightness) {
-		newLightness = minLightness;
-	} else if (l > maxLightness) {
-		newLightness = maxLightness;
-	}
-
-	const [newR, newG, newB] = hslToRgb(h, s, newLightness);
-
-	return `#${((1 << 24) | (newR << 16) | (newG << 8) | newB)
+	return `#${Number((1 << 24) | (newR << 16) | (newG << 8) | newB)
 		.toString(16)
 		.slice(1)
 		.toUpperCase()}`;

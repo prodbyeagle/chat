@@ -42,7 +42,7 @@ export function replaceEmotes(
 ): (string | JSX.Element)[] {
 	const stvGlobal: STVEmote[] = Array.isArray(rawSTVGlobal)
 		? rawSTVGlobal
-		: rawSTVGlobal?.emotes ?? [];
+		: (rawSTVGlobal?.emotes ?? []);
 
 	let stvChannel: STVEmote[] = [];
 	if (rawSTVChannel) {

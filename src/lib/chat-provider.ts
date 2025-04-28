@@ -1,5 +1,5 @@
-import tmi from 'tmi.js';
 import type { Message } from '@/types';
+import tmi from 'tmi.js';
 
 /**
  * Handles Twitch chat functionality, including connecting to the chat, disconnecting,

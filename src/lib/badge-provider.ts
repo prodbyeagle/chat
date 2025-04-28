@@ -1,6 +1,8 @@
 import type { BadgeData, TwitchBadgeSet } from '@/types';
-import { TwitchProvider } from '@/providers/twitch';
+
 import { TWITCH_CLIENT_ID } from '@/lib/config';
+
+import { TwitchProvider } from '@/providers/twitch';
 
 /**
  * Manages the retrieval and caching of Twitch badges for broadcasters.

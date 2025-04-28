@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+
 dotenv.config();
 
 export const TWITCH_TOKEN = process.env.TWITCH_TOKEN!;

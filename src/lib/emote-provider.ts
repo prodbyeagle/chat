@@ -1,5 +1,7 @@
 import type { TwitchEmoteData, TwitchEmoteSet } from '@/types';
+
 import { TWITCH_CLIENT_ID } from '@/lib/config';
+
 import { TwitchProvider } from '@/providers/twitch';
 
 /**

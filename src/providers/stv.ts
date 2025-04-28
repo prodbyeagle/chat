@@ -1,4 +1,5 @@
 import { STVEmote } from '@/types';
+
 import { TwitchProvider } from '@/providers/twitch';
 
 export class SevenTVProvider {

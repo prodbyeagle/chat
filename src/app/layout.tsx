@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Geist as fonthaha } from 'next/font/google';
+
 import './globals.css';
 
 const font = fonthaha({
@@ -9,7 +10,7 @@ const font = fonthaha({
 export const metadata: Metadata = {
 	title: 'EagleChat',
 	description: 'Chat Overlay by @prodbyeagle!',
-	icons: "https://kappa.lol/WTiY5",
+	icons: 'https://kappa.lol/WTiY5',
 };
 
 export default function RootLayout({

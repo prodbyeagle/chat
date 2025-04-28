@@ -1,24 +1,24 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
-import Image from 'next/image';
-
-import { ChatProvider } from '@/lib/chat-provider';
-import { BadgeProvider } from '@/lib/badge-provider';
-import { SevenTVProvider } from '@/providers/stv';
-import { EmoteProvider } from '@/lib/emote-provider';
-
-import { handleCommand } from '@/lib/command';
-import { replaceEmotes } from '@/utils/emoteUtils';
-import { adjustColorBrightness } from '@/utils/colorUtils';
-
 import type {
-	TwitchEmoteData,
+	Message,
 	STVEmote,
 	TwitchBadgeSet,
-	Message,
+	TwitchEmoteData,
 } from '@/types';
+import Image from 'next/image';
+import { useParams } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+
+import { BadgeProvider } from '@/lib/badge-provider';
+import { ChatProvider } from '@/lib/chat-provider';
+import { handleCommand } from '@/lib/command';
+import { EmoteProvider } from '@/lib/emote-provider';
+
+import { SevenTVProvider } from '@/providers/stv';
+
+import { adjustColorBrightness } from '@/utils/colorUtils';
+import { replaceEmotes } from '@/utils/emoteUtils';
 
 const MAX_MESSAGES = 20;
 

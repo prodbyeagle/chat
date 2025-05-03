@@ -1,24 +1,29 @@
 import type { STVEmote, TwitchEmoteData } from '@/types';
-import Image from 'next/image';
 import { JSX } from 'react';
+
+import { Emote } from '@/components/emote';
 
 export const escapeRegExp = (str: string) =>
 	str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 export const escapeHtml = (str: string) =>
 	str.replace(/[&<>"'`=\/]/g, (char) => `&#${char.charCodeAt(0)};`);
 
 type TwitchGlobalEmote = TwitchEmoteData['global'][number];
 type TwitchChannelEmote = TwitchEmoteData['channel'][number];
-type Emote = STVEmote | TwitchGlobalEmote | TwitchChannelEmote;
+type EmoteType = STVEmote | TwitchGlobalEmote | TwitchChannelEmote;
 
-const getEmoteDimensions = (emote: Emote) => {
+const getEmoteDimensions = (emote: EmoteType) => {
 	if ('data' in emote && emote.data.host.files.length) {
 		const file =
 			emote.data.host.files.find((f) => f.name.includes('4x')) ||
 			emote.data.host.files[0];
-		const targetH = 24;
+		const targetHeight = 24;
 		const ratio = file.width / file.height;
-		return { width: Math.round(targetH * ratio), height: targetH };
+		return {
+			width: Math.round(targetHeight * ratio),
+			height: targetHeight,
+		};
 	}
 	if ('images' in emote && emote.images.url_4x) {
 		return { width: 24, height: 24 };
@@ -44,22 +49,18 @@ export function replaceEmotes(
 		? rawSTVGlobal
 		: (rawSTVGlobal?.emotes ?? []);
 
-	let stvChannel: STVEmote[] = [];
-	if (rawSTVChannel) {
-		if (Array.isArray(rawSTVChannel)) {
-			stvChannel = rawSTVChannel;
-		} else if ('emotes' in rawSTVChannel) {
-			stvChannel = rawSTVChannel.emotes;
-		} else {
-			stvChannel = [rawSTVChannel];
-		}
-	}
+	const stvChannel: STVEmote[] = Array.isArray(rawSTVChannel)
+		? rawSTVChannel
+		: rawSTVChannel
+			? 'emotes' in rawSTVChannel
+				? rawSTVChannel.emotes
+				: [rawSTVChannel]
+			: [];
 
-	const emoteMap = new Map<string, Emote>();
-	if (twitchEmotes) {
-		twitchEmotes.global.forEach((e) => emoteMap.set(e.name, e));
-		twitchEmotes.channel.forEach((e) => emoteMap.set(e.name, e));
-	}
+	const emoteMap = new Map<string, EmoteType>();
+
+	twitchEmotes?.global.forEach((e) => emoteMap.set(e.name, e));
+	twitchEmotes?.channel.forEach((e) => emoteMap.set(e.name, e));
 	stvGlobal.forEach((e) => emoteMap.set(e.name, e));
 	stvChannel.forEach((e) => emoteMap.set(e.name, e));
 
@@ -67,42 +68,47 @@ export function replaceEmotes(
 		return [message];
 	}
 
-	const pattern = Array.from(emoteMap.keys()).map(escapeRegExp).join('|');
-	const regex = new RegExp(`\\b(${pattern})\\b`, 'g');
+	const pattern = Array.from(emoteMap.keys())
+		.map((name) => `(?:^|\\s|[.,!?])${escapeRegExp(name)}(?:$|\\s|[.,!?])`)
+		.join('|');
+
+	const regex = new RegExp(pattern, 'g');
 
 	const parts: (string | JSX.Element)[] = [];
 	let lastIndex = 0;
 	let match: RegExpExecArray | null;
 
 	while ((match = regex.exec(message)) !== null) {
+		const [fullMatch] = match;
 		parts.push(message.slice(lastIndex, match.index));
 
-		const name = match[1];
-		const emote = emoteMap.get(name)!;
-		let imageUrl: string | null = null;
+		const emote = emoteMap.get(fullMatch);
+		if (emote) {
+			let imageUrl: string;
 
-		if ('data' in emote) {
-			const file =
-				emote.data.host.files.find((f) => f.name.includes('4x')) ||
-				emote.data.host.files[0];
-			imageUrl = `https:${emote.data.host.url}/${file.name}`;
+			if ('data' in emote) {
+				const file =
+					emote.data.host.files.find((f) => f.name.includes('4x')) ||
+					emote.data.host.files[0];
+				imageUrl = `https:${emote.data.host.url}/${file.name}`;
+			} else {
+				imageUrl = emote.images.url_2x;
+			}
+
+			const { width, height } = getEmoteDimensions(emote);
+
+			parts.push(
+				<Emote
+					key={match.index}
+					src={imageUrl}
+					alt={fullMatch}
+					width={width}
+					height={height}
+				/>
+			);
 		} else {
-			imageUrl = emote.images.url_2x;
+			parts.push(fullMatch);
 		}
-
-		const { width, height } = getEmoteDimensions(emote);
-		parts.push(
-			<Image
-				key={match.index}
-				src={imageUrl}
-				alt={name}
-				width={width}
-				height={height}
-				unoptimized
-				className='inline-block'
-				style={{ margin: '0 0.25em' }}
-			/>
-		);
 
 		lastIndex = regex.lastIndex;
 	}

@@ -6,9 +6,10 @@ import type {
 	TwitchBadgeSet,
 	TwitchEmoteData,
 } from '@/types';
-import Image from 'next/image';
 import { useParams } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+
+import { Badge } from '@/components/badge';
 
 import { BadgeProvider } from '@/lib/badge-provider';
 import { ChatProvider } from '@/lib/chat-provider';
@@ -59,7 +60,6 @@ export default function ChatPage() {
 					'prodbyeagle',
 					'https://cdn.7tv.app/emote/01H5ET82KR000B4C7M34K6ZCTK/4x.avif'
 				);
-
 				BadgeProvider.addCustomBadge(
 					'dwhincandi',
 					'https://cdn.7tv.app/emote/01F6T920S80004B20PGM3Q1GQS/4x.avif'
@@ -98,41 +98,22 @@ export default function ChatPage() {
 	}, [channel]);
 
 	return (
-		<div className='h-screen p-4 text-xl bg-neutral-950 text-yellow-50 flex flex-col justify-end overflow-hidden cursor-default select-none'>
+		<div className='h-screen p-4 text-xl text-neutral-50 flex flex-col justify-end overflow-hidden'>
 			<div className='space-y-1'>
 				{messages.map((msg, idx) => (
 					<div key={idx} className='flex items-center space-x-1'>
-						{badges &&
-							Object.entries(msg.badges || {}).map(
-								([badge, version]) => {
-									const url = new BadgeProvider(
-										channel
-									).getBadgeUrl(badge, version || '', badges);
-									return url ? (
-										<Image
-											key={badge}
-											src={url}
-											width={20}
-											height={20}
-											alt={badge}
-											unoptimized
-											className='rounded object-contain'
-										/>
-									) : null;
-								}
-							)}
-						{BadgeProvider.getCustomBadge(msg.username) && (
-							<Image
-								src={
-									BadgeProvider.getCustomBadge(msg.username)!
-								}
-								width={20}
-								height={20}
-								alt='Custom Badge'
-								unoptimized
-								className='rounded object-contain'
-							/>
-						)}
+						<Badge
+							username={msg.username}
+							channel={channel}
+							badges={
+								Object.fromEntries(
+									Object.entries(msg.badges).filter(
+										([, value]) => value !== undefined
+									)
+								) as Record<string, string>
+							}
+							badgeData={badges}
+						/>
 						{msg.color && (
 							<span
 								className='font-semibold'

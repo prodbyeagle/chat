@@ -78,7 +78,6 @@ export class SevenTVProvider {
 			}
 
 			const json = await res.json();
-			console.log('[fetchGlobalSTVEmotes]', json);
 			return json.data;
 		} catch (error) {
 			console.error(`Fehler beim Abrufen der globalen Emotes: ${error}`);

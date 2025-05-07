@@ -74,9 +74,7 @@ export class TwitchProvider {
 	 * @throws Error if the broadcaster is not found or if the API request fails.
 	 */
 	static async getBroadcasterId(username: string): Promise<string> {
-		console.log(`Fetching broadcaster ID for username: ${username}`);
 		const token = await TwitchProvider.getAccessToken();
-		console.log(`Access token retrieved: ${token}`);
 
 		const res = await fetch(
 			`https://api.twitch.tv/helix/users?login=${username}`,
@@ -99,16 +97,12 @@ export class TwitchProvider {
 		}
 
 		const data = await res.json();
-		console.log(`Response data: ${JSON.stringify(data)}`);
 		if (!data?.data?.length) {
 			console.error(`No broadcaster found for username: ${username}`);
 			throw new Error(`No broadcaster found for username: ${username}`);
 		}
 
 		const broadcasterId = data.data[0].id;
-		console.log(
-			`Broadcaster ID for username ${username}: ${broadcasterId}`
-		);
 		return broadcasterId;
 	}
 }

@@ -18,11 +18,7 @@
 
 1. **Copy the URL** below and replace `YOUR_USERNAME` with your desired username:
 
-```
-
 [https://eaglechatify.vercel.app/YOUR_USERNAME](https://eaglechatify.vercel.app/YOUR_USERNAME)
-
-```
 
 2. **Open OBS Studio**
    Go to **Sources > + > Browser** and paste your URL.
@@ -35,11 +31,7 @@
 
 For a user named `ninja`, the URL would be:
 
-```
-
 [https://eaglechatify.vercel.app/ninja](https://eaglechatify.vercel.app/ninja)
-
-```
 
 ## 📦 Tech Stack
 
